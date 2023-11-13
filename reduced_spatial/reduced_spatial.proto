@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "github.com/kfuseini/reduced_spatial/reduced_spatial/reduced_spatial";
+
+package reduced_spatial;
+
+service ReducedSpatial {
+  // Receives list of points and may do spatial reduction
+  // before saving to Cassandra
+  rpc SendPoints (SendPointsReq) returns (SendPointsReply) {}
+}
+
+message Point {
+  string ID = 1;
+  int64 T = 2;
+  double X = 3;
+  double Y = 4;
+  double Z = 5;
+}
+
+message SendPointsReq {
+  repeated Point points = 1;
+  optional double eps = 2;
+  optional bool noDb = 3;
+}
+
+message SendPointsReply {
+  int32 numPoints = 1;
+  int32 numReducedPoints = 2;
+}

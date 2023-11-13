@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  cassandra:
+    container_name: reduced-spatial-cassandra
+    image: cassandra:4.1
+    ports:
+      - "9042:9042"
+      
+    environment:
+      CASSANDRA_CLUSTER_NAME: reduced_spatial
+    healthcheck:
+      test: ["CMD", "cqlsh" ,"-e describe keyspaces"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+    networks:
+      - backend
+    restart: unless-stopped
+    volumes:
+      - ./cassandra_data:/var/lib/cassandra
+
+  cassandra_init:
+    container_name: reduced-spatial-cassandra-init
+    image: cassandra:4.1
+    networks:
+      - backend
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    volumes:
+      - ./schema.cql:/schema.cql
+    command: /bin/bash -c "echo loading cassandra keyspace && cqlsh cassandra -f /schema.cql"
+
+  server:
+    container_name: reduced-spatial-server
+    build: .
+    ports:
+      - "50051:50051"
+    networks:
+      - backend
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      cassandra_init:
+        condition: service_completed_successfully
+    command: ["./main", "--port", "50051", "--cass", "cassandra"]
+    restart: unless-stopped
+
+networks:
+  backend:
+    name: backend
