@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"os"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -39,15 +40,13 @@ func Default() Config {
 }
 
 func Init() (*Config, error) {
-	err := godotenvLoad()
-	if err != nil {
+	if err := godotenvLoad(); err != nil && !os.IsNotExist(err) {
 		return nil, errors.Wrap(err, "reading .env file")
 	}
 
 	config := Default()
 
-	err = envconfigProcess("", &config)
-	if err != nil {
+	if err := envconfigProcess("", &config); err != nil {
 		return nil, errors.Wrap(err, "processing env vars")
 	}
 
