@@ -141,11 +141,10 @@ func reducePoints(points []*pb.Point, eps float64) []*pb.Point {
 
 func main() {
 	config, err := config.Init()
-	flag.Parse()
-
 	if err != nil {
 		log.Fatalf("Failed to create config: %v", err)
 	}
+	flag.Parse()
 
 	e, err := env.NewEnv(config)
 	if err != nil {
